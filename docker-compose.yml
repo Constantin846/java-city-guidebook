@@ -1,0 +1,29 @@
+services:
+  cgb-service:
+    build: .
+    image: cgb-service
+    container_name: cgb-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - cgb-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://cgb-db:5432/cgb
+      - SPRING_DATASOURCE_USERNAME=cgb
+      - SPRING_DATASOURCE_PASSWORD=cgb
+      - SPRING_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
+
+  cgb-db:
+    image: postgres:16.1
+    container_name: postgres-cgb-db
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_PASSWORD=cgb
+      - POSTGRES_USER=cgb
+      - POSTGRES_DB=cgb
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
