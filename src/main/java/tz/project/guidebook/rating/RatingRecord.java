@@ -33,8 +33,5 @@ public class RatingRecord {
     Double rating;
 
     @Column(name = "landmark_id", nullable = false)
-    //@ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "landmark_id")
-    //@Null(message = "Rating landmark must not be set")
     Long landmarkId;
 }

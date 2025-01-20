@@ -7,13 +7,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import tz.project.guidebook.comment.Comment;
+import tz.project.guidebook.comment.CommentRepository;
 import tz.project.guidebook.exception.NotFoundException;
 import tz.project.guidebook.landmark.Landmark;
+import tz.project.guidebook.landmark.dto.LandmarkCommentsDto;
 import tz.project.guidebook.landmark.dto.LandmarkFindParams;
 import tz.project.guidebook.landmark.repository.LandmarkRepository;
 import tz.project.guidebook.landmark.repository.LandmarkSpecifications;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,6 +25,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class LandmarkServiceImpl implements LandmarkService {
+    private final CommentRepository commentRepository;
     private final LandmarkRepository landmarkRepository;
 
     @Transactional
@@ -33,7 +38,6 @@ public class LandmarkServiceImpl implements LandmarkService {
     @Override
     public List<Landmark> findByParams(LandmarkFindParams params) {
         List<Specification<Landmark>> specifications = new ArrayList<>();
-        Sort sort = Sort.by("averageRating");
 
         if (Objects.nonNull(params.getCity())) {
             Specification<Landmark> specification = LandmarkSpecifications.hasCityEquals(params.getCity());
@@ -53,25 +57,60 @@ public class LandmarkServiceImpl implements LandmarkService {
                     LandmarkSpecifications.hasAverageRatingMoreThanOrEqual(params.getMinRating());
             specifications.add(specification);
         }
+
+        boolean isOrderByDistance = false;
         if (Objects.nonNull(params.getLat()) && Objects.nonNull(params.getLon())
                 && Objects.nonNull(params.getRadiusKM())) {
             Specification<Landmark> specification =
                     LandmarkSpecifications.hasLocationInRadiusKM(params.getLat(), params.getLon(), params.getRadiusKM());
             specifications.add(specification);
-            sort = Sort.by("distance"); //todo
+            isOrderByDistance = true;
         }
 
-        // todo sort
-
+        Sort sort = getSort(params.getSort());
         if (specifications.isEmpty()) {
             return landmarkRepository.findAll(PageRequest.of(params.getFrom(), params.getSize(), sort))
                     .stream().toList();
         } else {
+
             Specification<Landmark> totalSpecification = specifications.stream().reduce(Specification::and).get();
-            return landmarkRepository.findAll(totalSpecification,
-                            PageRequest.of(params.getFrom(), params.getSize(), sort))
-                    .stream().toList();
+            if (isOrderByDistance && sort.isUnsorted()) {
+                totalSpecification = LandmarkSpecifications.orderByDistance(
+                        params.getLat(), params.getLon(), totalSpecification);
+                return landmarkRepository.findAll(totalSpecification,
+                                PageRequest.of(params.getFrom(), params.getSize()))
+                        .stream().toList();
+            } else {
+                return landmarkRepository.findAll(totalSpecification,
+                                PageRequest.of(params.getFrom(), params.getSize(), sort))
+                        .stream().toList();
+            }
         }
+    }
+
+    @Override
+    public Landmark findById(long landmarkId) {
+        return getLandmarkById(landmarkId);
+    }
+
+    @Override
+    public LandmarkCommentsDto findByIdWithComments(long landmarkId) {
+        Landmark landmark = getLandmarkById(landmarkId);
+        List<Comment> comments = commentRepository.findAllByLandmarkId(landmarkId);
+        LandmarkCommentsDto lcDto = new LandmarkCommentsDto(landmark);
+        lcDto.setComments(new HashSet<>(comments));
+        return lcDto;
+    }
+
+    private Sort getSort(String sort) {
+        if (Objects.isNull(sort)) return Sort.unsorted();
+        return switch (sort) {
+            case "city" -> Sort.by(Sort.Direction.ASC, "city");
+            case "name" -> Sort.by(Sort.Direction.ASC, "name");
+            case "category" -> Sort.by(Sort.Direction.ASC, "category");
+            case "averageRating" -> Sort.by(Sort.Direction.DESC, "averageRating");
+            default -> Sort.unsorted();
+        };
     }
 
     private Landmark getLandmarkById(long id) {

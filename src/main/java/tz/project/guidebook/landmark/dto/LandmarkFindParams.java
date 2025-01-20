@@ -42,4 +42,5 @@ public class LandmarkFindParams {
     @Positive(message = "Size param must be positive")
     Integer size = 10;
 
+    String sort;
 }

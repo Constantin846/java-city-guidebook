@@ -37,4 +37,17 @@ public class LandmarkSpecifications {
                         radiusKM)
         );
     }
+
+    public static Specification<Landmark> orderByDistance(Double lat, Double lon, Specification<Landmark> spec) {
+        return (((root, query, criteriaBuilder) -> {
+            query.orderBy(criteriaBuilder.asc(
+                    criteriaBuilder.function("distance", Double.class,
+                        criteriaBuilder.literal(lat),
+                        criteriaBuilder.literal(lon),
+                        root.get("locationLat"),
+                        root.get("locationLon"))
+            ));
+            return spec.toPredicate(root, query, criteriaBuilder);
+        }));
+    }
 }

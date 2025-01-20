@@ -27,7 +27,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = "ratingRecords")
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PROTECTED)
 public class Landmark {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,15 +60,9 @@ public class Landmark {
     Double locationLon;
 
     @Column(name = "average_rating", nullable = true)
-//    @JoinColumn(table = "RatingRecord", name = "landmarkId")
-//    @Formula(value = "avg(rating)") todo delete
     @Null(message = "Average rating must not be set")
     Double averageRating;
 
     @OneToMany(mappedBy = "landmarkId", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RatingRecord> ratingRecords;
-
-    /*Set<Comment> comments;
-
-    List<RatingRecord> ratingRecords;*/ // todo delete
+    private List<RatingRecord> ratingRecords;
 }
