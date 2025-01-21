@@ -1,4 +1,4 @@
-package tz.project.guidebook.comment.comment;
+package tz.project.guidebook.comment.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

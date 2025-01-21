@@ -32,18 +32,21 @@ public class LandmarkController {
     }
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<Landmark> find(@Valid LandmarkFindParams params) {
         log.info("Find landmarks by params {}", params);
         return landmarkService.findByParams(params);
     }
 
     @GetMapping("/{landmarkId}")
+    @ResponseStatus(HttpStatus.OK)
     public Landmark findById(@PathVariable("landmarkId") long landmarkId) {
         log.info("Find landmark by id={}", landmarkId);
         return landmarkService.findById(landmarkId);
     }
 
     @GetMapping("/{landmarkId}/comments")
+    @ResponseStatus(HttpStatus.OK)
     public LandmarkCommentsDto findByIdWithComments(@PathVariable("landmarkId") long landmarkId) {
         log.info("Find landmark with comments by id={}", landmarkId);
         return landmarkService.findByIdWithComments(landmarkId);

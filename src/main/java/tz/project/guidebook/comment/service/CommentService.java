@@ -1,4 +1,4 @@
-package tz.project.guidebook.comment.comment;
+package tz.project.guidebook.comment.service;
 
 import tz.project.guidebook.comment.Comment;
 
