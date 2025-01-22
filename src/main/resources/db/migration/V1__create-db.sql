@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS comments (
   CONSTRAINT fk_comment_landmark_id FOREIGN KEY(landmark_id) REFERENCES landmarks(id)
 );
 
-/*CREATE OR REPLACE FUNCTION distance(lat1 float, lon1 float, lat2 float, lon2 float)
+CREATE OR REPLACE FUNCTION distance(lat1 float, lon1 float, lat2 float, lon2 float)
     RETURNS float AS '
     declare
         dist float = 0;
@@ -62,40 +62,4 @@ CREATE TABLE IF NOT EXISTS comments (
             RETURN dist;
         END IF;
     END;
-' LANGUAGE PLPGSQL;*/
-
-CREATE ALIAS distance AS '
-    Double distance(Double lat, Double lon, Double locationLat, Double locationLon) {
-        double rad_lat1 = lat * Math.PI / 180;
-        double rad_lat2 = locationLat * Math.PI / 180;
-        double rad_lon1 = lon * Math.PI / 180;
-        double rad_lon2 = locationLon * Math.PI / 180;
-
-        if (rad_lat1 > rad_lat2) {
-            if (rad_lon1 > rad_lon2) {
-                return calculateDistance(rad_lat1, rad_lat2, rad_lon1, rad_lon2);
-            } else {
-                return calculateDistance(rad_lat2, rad_lat1, rad_lon1, rad_lon2);
-            }
-        } else {
-            if (rad_lon1 > rad_lon2) {
-                return calculateDistance(rad_lat1, rad_lat2, rad_lon2, rad_lon1);
-            } else {
-                return calculateDistance(rad_lat2, rad_lat1, rad_lon2, rad_lon1);
-            }
-        }
-    }
-
-    static Double calculateDistance(double latMax, double latMin, double lonMax, double lonMin) {
-        double radius = 6371;
-        double deltaLat = 2 * radius * Math.sin((latMax - latMin) / 2);
-        double deltaLonMin = 2 * radius * Math.cos(latMax) * Math.sin((lonMax - lonMin) / 2);
-        double deltaLonMax = 2 * radius * Math.cos(latMin) * Math.sin((lonMax - lonMin) / 2);
-        double deferenceDeltaLon = (deltaLonMax - deltaLonMin) / 2;
-        double lengthBetweenLatSqrt = Math.pow(deltaLat, 2) - Math.pow(deferenceDeltaLon, 2);
-        double length = Math.sqrt(lengthBetweenLatSqrt + Math.pow(deltaLonMax - deferenceDeltaLon, 2));
-        double alfa = 2 * Math.asin(length / (2 * radius));
-        return alfa * radius;
-    }
-';
---todo delete
+' LANGUAGE PLPGSQL;

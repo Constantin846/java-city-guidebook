@@ -11,13 +11,13 @@ public interface LandmarkRepository extends JpaRepository<Landmark, Long>, JpaSp
 
     @Modifying(flushAutomatically = true)
     @Query(value = """
-            UPDATE landmarks l SET l.average_rating = (
+            UPDATE landmarks SET average_rating = (
                 SELECT AVG(r.rating)
                 FROM rating_records r
                 WHERE r.landmark_id = :id
                 GROUP BY r.landmark_id
                 )
-            WHERE l.id = :id
+            WHERE landmarks.id = :id
             """, nativeQuery = true)
     void setAverageRating(@Param("id") Long id);
 }
